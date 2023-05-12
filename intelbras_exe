@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Desenvolvido por: Bee Solutions
+# Autor: Fernando Almondes
+# Data: 18/11/2022 23:53
+
+PON=$1
+OP=$2
+IP="IP-OLT-AQUI"
+
+# Veja as condicoes ao chamar o script #
+# all = Total de ONUs Configuradas Geral
+# cnf = Total de ONUs Configuradas na PON
+# onl = Total de ONUs Onlines na PON
+# off = Total de ONUs Offlines na PON
+
+if [[ $OP == "all" ]]; then
+# Total Configuradas - Geral
+total=$(cat /var/tmp/zabbix/lista-intelbras-state-$IP-full.txt | grep -e 'Configured ONUs' -e 'GPON' -e 'OLT total' | grep -A 3 -w "GPON $1" | grep 'OLT total' | awk '{print $5}' | sed 's/[^[:print:]]//')
+echo $total
+
+elif [[ $OP == "cnf" ]]; then
+# Total Configuradas - GPON 1
+configuradas=$(cat /var/tmp/zabbix/lista-intelbras-state-$IP-full.txt | grep -e 'Configured ONUs' -e 'GPON' -e 'OLT total' | grep -A 3 -w "GPON $1" | grep 'Configured' | awk '{print $3}' | sed 's/,//g' | sed 's/[^[:print:]]//')
+echo $configuradas
+
+elif [[ $OP == "onl" ]]; then
+# Total Onlines - GPON 1
+onlines=$(cat /var/tmp/zabbix/lista-intelbras-state-$IP-full.txt | grep -e 'Configured ONUs' -e 'GPON' -e 'OLT total' | grep -A 3 -w "GPON $1" | grep 'Configured' | awk '{print $7}' | sed 's/,//g' | sed 's/[^[:print:]]//')
+echo $onlines
+
+elif [[ $OP == "off" ]]; then
+# Total Offlines - GPON 1
+
+configuradas=$(cat /var/tmp/zabbix/lista-intelbras-state-$IP-full.txt | grep -e 'Configured ONUs' -e 'GPON' -e 'OLT total' | grep -A 3 -w "GPON $1" | grep 'Configured' | awk '{print $3}' | sed 's/,//g' | sed 's/[^[:print:]]//')
+onlines=$(cat /var/tmp/zabbix/lista-intelbras-state-$IP-full.txt | grep -e 'Configured ONUs' -e 'GPON' -e 'OLT total' | grep -A 3 -w "GPON $1" | grep 'Configured' | awk '{print $7}' | sed 's/,//g' | sed 's/[^[:print:]]//')
+
+offlines=$(( $configuradas - $onlines ))
+echo $offlines
+
+fi
+
+# Debugando
+#echo "Total Geral: $total"
+#echo "Configuradas GPON $1: $configuradas"
+#echo "Onlines GPON $1: $onlines"
+#echo "Offlines GPON $1: $offlines"
